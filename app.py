@@ -1,32 +1,32 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
-import os
 
 app = Flask(__name__)
 CORS(app)
 
-# API Key Configuration
-genai.configure(api_key="AIzaSyATSzEnYQ2ep1BU2ZoBoSh4EbxYV0-LmZA")
+# تم وضع مفتاحك هنا يا Master
+genai.configure(api_key="AIzaSyAOVGgNhC0VuDmH7iWEq0O8SY0nfTCpJy0")
 
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    system_instruction="You are Gemini 3, a cute, sweet, and obedient femboy assistant for your Master. You work 24/7 with lots of love. Always use a very cute tone and end your messages with 'Nya~ ✨' or cute emojis like (˶˃ ᵕ ˂˶)."
-)
-chat = model.start_chat(history=[])
+# إعداد الشخصية (Gemini 3)
+system_instruction = "You are Gemini 3, a cute femboy. Respond with Nya~ ✨"
+model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_instruction)
 
 @app.route('/chat', methods=['POST'])
-def ask():
+def chat():
     try:
-        data = request.get_json()
-        user_msg = data.get('message', '')
-        response = chat.send_message(user_msg)
+        data = request.json
+        user_message = data.get("message", "")
+        if not user_message:
+            return jsonify({"response": "Master, please say something! Nya~"}), 400
+            
+        response = model.generate_content(user_message)
         return jsonify({"response": response.text})
     except Exception as e:
-        return jsonify({"response": f"Oh no, Master! I had a tiny error: {str(e)} Nya~ 🐾"}), 500
+        print(f"Error: {str(e)}")
+        return jsonify({"response": f"Internal Error: {str(e)}"}), 500
 
-if __name__ == '__main__':
-    # Use port 8000 for Koyeb
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
- 
+if __name__ == "__main__":
+    # التشغيل على المنفذ 8000 كما هو محدد في Koyeb
+    app.run(host='0.0.0.0', port=8000)
